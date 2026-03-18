@@ -288,6 +288,12 @@ async def run_full_pipeline(
     current_user: dict = Depends(get_current_user),
 ):
     """Execute the full automation pipeline: Discover → Score → Apply → Outreach → Follow-up."""
+    # Verify user exists in the database
+    from shared.models import User
+    user_check = await db.execute(select(User).where(User.id == current_user["user_id"]))
+    if not user_check.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="User account not found. Please log out and re-register.")
+
     pipeline_steps = [
         {"agent_type": "discovery", "task_type": "scan_jobs"},
         {"agent_type": "matching", "task_type": "score_jobs"},

@@ -8,8 +8,6 @@ import json
 import logging
 from dataclasses import dataclass, field
 
-from openai import AsyncOpenAI
-
 from shared.config import BaseServiceSettings
 
 logger = logging.getLogger(__name__)
@@ -68,6 +66,7 @@ async def score_job(
         logger.warning("OPENAI_API_KEY not configured — returning default score")
         return MatchResult(score=50, explanation="AI scoring unavailable (no API key)")
 
+    from openai import AsyncOpenAI
     client = AsyncOpenAI(api_key=settings.openai_api_key)
 
     prompt = SCORING_PROMPT.format(

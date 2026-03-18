@@ -8,8 +8,6 @@ import json
 import logging
 from dataclasses import dataclass, field
 
-from openai import AsyncOpenAI
-
 from shared.config import BaseServiceSettings
 
 logger = logging.getLogger(__name__)
@@ -219,6 +217,7 @@ async def extract_skills_from_job(
         logger.warning("OPENAI_API_KEY not configured — using regex fallback")
         return _regex_skill_extraction(title, description)
 
+    from openai import AsyncOpenAI
     client = AsyncOpenAI(api_key=settings.openai_api_key)
 
     prompt = SKILL_EXTRACTION_PROMPT.format(
