@@ -33,7 +33,7 @@ export default function PipelineMonitor() {
     ]).then(([pRes, cRes, sRes]) => {
       setPipelineStats(pRes.data);
       setCrawlStats(cRes.data);
-      setSources(sRes.data ?? []);
+      setSources(Array.isArray(sRes.data) ? sRes.data : []);
       setLoading(false);
     });
   }, []);

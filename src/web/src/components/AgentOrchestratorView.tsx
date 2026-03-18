@@ -31,11 +31,11 @@ export default function AgentOrchestratorView() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      agentsApi.getStatus().then(r => setAgents(r.data.agents ?? {})).catch(() => {}),
-      agentsApi.getTasks().then(r => setTasks(r.data.tasks ?? [])).catch(() => {}),
-      agentsApi.getWorkflows().then(r => setWorkflows(r.data.workflows ?? [])).catch(() => {}),
+      agentsApi.getStatus().then(r => { const d = r.data?.agents; setAgents(typeof d === 'object' && d !== null && !Array.isArray(d) ? d : {}); }).catch(() => {}),
+      agentsApi.getTasks().then(r => { const d = r.data?.tasks ?? r.data; setTasks(Array.isArray(d) ? d : []); }).catch(() => {}),
+      agentsApi.getWorkflows().then(r => { const d = r.data?.workflows ?? r.data; setWorkflows(Array.isArray(d) ? d : []); }).catch(() => {}),
       agentsApi.getStats().then(r => setStats(r.data)).catch(() => {}),
-      agentsApi.getMcpTools?.().then(r => setMcpTools(r.data?.tools ?? [])).catch(() => {}),
+      agentsApi.getMcpTools?.().then(r => { const d = r.data?.tools ?? r.data; setMcpTools(Array.isArray(d) ? d : []); }).catch(() => {}),
     ]).finally(() => setLoading(false));
   };
 
@@ -74,7 +74,8 @@ export default function AgentOrchestratorView() {
     setActivityLoading(true);
     try {
       const res = await agentsApi.getActivity(30);
-      setActivity(res.data.activity ?? []);
+      const d = res.data?.activity ?? res.data;
+      setActivity(Array.isArray(d) ? d : []);
     } catch {
       setActivity([]);
     } finally {
@@ -245,7 +246,7 @@ export default function AgentOrchestratorView() {
               </div>
               {planResult.reasoning && <p className="text-gray-400 text-sm">{planResult.reasoning}</p>}
               <div className="space-y-2">
-                {(planResult.steps || planResult.tasks_created_ids || []).map((step: any, i: number) => (
+                {(Array.isArray(planResult.steps) ? planResult.steps : Array.isArray(planResult.tasks_created_ids) ? planResult.tasks_created_ids : []).map((step: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 p-3 bg-navy-950/50 rounded-lg">
                     <span className="text-xs font-bold text-purple-400 w-6 h-6 flex items-center justify-center rounded-full bg-purple-400/10">{i + 1}</span>
                     <div className="flex-1">
@@ -256,7 +257,7 @@ export default function AgentOrchestratorView() {
                   </div>
                 ))}
               </div>
-              {planResult.tasks_created_ids && (
+              {Array.isArray(planResult.tasks_created_ids) && (
                 <p className="text-cyan-400 text-sm">✅ {planResult.tasks_created_ids.length} tasks created and queued for execution</p>
               )}
             </div>

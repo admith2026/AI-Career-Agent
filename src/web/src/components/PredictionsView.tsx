@@ -40,8 +40,8 @@ export default function PredictionsView() {
 
   useEffect(() => {
     Promise.all([
-      predictionsApi.getTrends().then(r => setTrends(r.data.trends ?? r.data ?? [])).catch(() => {}),
-      predictionsApi.getOpportunities().then(r => setOpportunities(r.data.opportunities ?? r.data ?? [])).catch(() => {}),
+      predictionsApi.getTrends().then(r => { const d = r.data?.trends ?? r.data; setTrends(Array.isArray(d) ? d : []); }).catch(() => {}),
+      predictionsApi.getOpportunities().then(r => { const d = r.data?.opportunities ?? r.data; setOpportunities(Array.isArray(d) ? d : []); }).catch(() => {}),
       predictionsApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);

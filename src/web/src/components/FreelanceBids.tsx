@@ -36,7 +36,7 @@ export default function FreelanceBids() {
 
   const load = () => {
     Promise.all([
-      freelanceApi.getBids(platformFilter || undefined, statusFilter || undefined).then(r => setBids(r.data.bids ?? r.data ?? [])).catch(() => {}),
+      freelanceApi.getBids(platformFilter || undefined, statusFilter || undefined).then(r => { const d = r.data?.bids ?? r.data; setBids(Array.isArray(d) ? d : []); }).catch(() => {}),
       freelanceApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };

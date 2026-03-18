@@ -19,7 +19,7 @@ export default function MarketplaceView() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      marketplaceApi.getJobs().then(r => setJobs(r.data.jobs ?? [])).catch(() => {}),
+      marketplaceApi.getJobs().then(r => { const d = r.data?.jobs ?? r.data; setJobs(Array.isArray(d) ? d : []); }).catch(() => {}),
       marketplaceApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };
@@ -29,7 +29,7 @@ export default function MarketplaceView() {
   const viewCandidates = (jobId: string) => {
     setSelectedJob(jobId);
     setTab('candidates');
-    marketplaceApi.getCandidates(jobId).then(r => setCandidates(r.data.candidates ?? [])).catch(() => setCandidates([]));
+    marketplaceApi.getCandidates(jobId).then(r => { const d = r.data?.candidates ?? r.data; setCandidates(Array.isArray(d) ? d : []); }).catch(() => setCandidates([]));
   };
 
   const matchCandidates = (jobId: string) => {

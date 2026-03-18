@@ -30,8 +30,8 @@ export default function RecruiterNetwork() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      recruitersApi.list().then(r => setRecruiters(r.data ?? [])).catch(() => setRecruiters([])),
-      recruitersApi.getTopRanked(10).then(r => setTopRanked(r.data ?? [])).catch(() => setTopRanked([])),
+      recruitersApi.list().then(r => setRecruiters(Array.isArray(r.data) ? r.data : [])).catch(() => setRecruiters([])),
+      recruitersApi.getTopRanked(10).then(r => setTopRanked(Array.isArray(r.data) ? r.data : [])).catch(() => setTopRanked([])),
       recruitersApi.getStatsSummary().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };

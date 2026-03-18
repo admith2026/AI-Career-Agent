@@ -1,10 +1,11 @@
 """Pydantic schemas for API request/response serialization."""
 
+import re
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
@@ -15,6 +16,17 @@ class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
     password: str = Field(min_length=8, max_length=128)
     phone: str | None = None
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
 
 class LoginRequest(BaseModel):
@@ -47,8 +59,8 @@ class NotificationPreferences(BaseModel):
 
 
 class ProfileUpdate(BaseModel):
-    headline: str | None = None
-    summary: str | None = None
+    headline: str | None = Field(None, max_length=500)
+    summary: str | None = Field(None, max_length=5000)
     skills: list[str] | None = None
     experience_years: int | None = None
     preferred_rate_min: float | None = None
@@ -58,11 +70,11 @@ class ProfileUpdate(BaseModel):
     preferred_roles: list[str] | None = None
     preferred_locations: list[str] | None = None
     visa_required: bool | None = None
-    min_company_size: str | None = None
-    resume_base: str | None = None
-    linkedin_url: str | None = None
-    github_url: str | None = None
-    portfolio_url: str | None = None
+    min_company_size: str | None = Field(None, max_length=50)
+    resume_base: str | None = Field(None, max_length=50000)
+    linkedin_url: str | None = Field(None, max_length=500)
+    github_url: str | None = Field(None, max_length=500)
+    portfolio_url: str | None = Field(None, max_length=500)
 
 
 class ProfileOut(BaseModel):

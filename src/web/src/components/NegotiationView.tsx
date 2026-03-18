@@ -37,7 +37,7 @@ export default function NegotiationView() {
 
   const load = () => {
     Promise.all([
-      negotiationApi.getStrategies().then(r => setStrategies(r.data.strategies ?? r.data ?? [])).catch(() => {}),
+      negotiationApi.getStrategies().then(r => { const d = r.data?.strategies ?? r.data; setStrategies(Array.isArray(d) ? d : []); }).catch(() => {}),
       negotiationApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };

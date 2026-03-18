@@ -110,7 +110,7 @@ export default function JobFeed() {
     try {
       if (searchMode === 'semantic' && semanticQuery) {
         const res = await jobsApi.semanticSearch(semanticQuery, filters.technologies.length > 0 ? filters.technologies : undefined);
-        setJobs(res.data?.results ?? []);
+        setJobs(Array.isArray(res.data?.results) ? res.data.results : []);
         setTotal(res.data?.results?.length ?? 0);
       } else {
         const res = await jobsApi.getJobs({
@@ -134,7 +134,7 @@ export default function JobFeed() {
           sort_by: filters.sort_by,
           sort_order: filters.sort_order,
         });
-        setJobs(res.data?.data ?? []);
+        setJobs(Array.isArray(res.data?.data) ? res.data.data : []);
         setTotal(res.data?.total ?? 0);
       }
     } catch {

@@ -1,13 +1,13 @@
-version: "3.9"
+﻿version: "3.9"
 
 services:
-  # ─── Infrastructure ──────────────────────────────────────────────────────────
+  # â”€â”€â”€ Infrastructure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: career_agent
       POSTGRES_USER: career
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
       - "5432:5432"
     volumes:
@@ -23,7 +23,7 @@ services:
     image: rabbitmq:3.13-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: career
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-changeme}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -57,7 +57,7 @@ services:
   neo4j:
     image: neo4j:5.17.0
     environment:
-      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-changeme}
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?Set NEO4J_PASSWORD in .env}
       NEO4J_PLUGINS: '["apoc"]'
     ports:
       - "7474:7474"
@@ -65,12 +65,12 @@ services:
     volumes:
       - neo4j_data:/data
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-changeme}", "RETURN 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ─── Backend Services ────────────────────────────────────────────────────────
+  # â”€â”€â”€ Backend Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   api-gateway:
     build:
       context: .
@@ -79,10 +79,10 @@ services:
     ports:
       - "5000:5000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       JOB_DISCOVERY_URL: http://job-discovery:5001
       JOB_INTELLIGENCE_URL: http://job-intelligence:5002
       RESUME_GENERATOR_URL: http://resume-generator:5003
@@ -127,10 +127,10 @@ services:
     ports:
       - "5001:5001"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/1
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -145,10 +145,10 @@ services:
     ports:
       - "5002:5002"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/2
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
@@ -166,10 +166,10 @@ services:
     ports:
       - "5003:5003"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/3
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       postgres:
@@ -183,10 +183,10 @@ services:
     ports:
       - "5004:5004"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/4
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       RESUME_GENERATOR_URL: http://resume-generator:5003
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -208,10 +208,10 @@ services:
     ports:
       - "5005:5005"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/5
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
       WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
@@ -225,7 +225,7 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  # ─── New Services ────────────────────────────────────────────────────────────
+  # â”€â”€â”€ New Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   crawl-engine:
     build:
       context: .
@@ -234,10 +234,10 @@ services:
     ports:
       - "5006:5006"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/6
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -254,10 +254,10 @@ services:
     ports:
       - "5007:5007"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/7
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       JOB_INTELLIGENCE_URL: http://job-intelligence:5002
     depends_on:
       postgres:
@@ -275,13 +275,13 @@ services:
     ports:
       - "5008:5008"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/8
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       NEO4J_URI: bolt://neo4j:7687
       NEO4J_USER: neo4j
-      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-changeme}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
@@ -298,10 +298,10 @@ services:
     ports:
       - "5009:5009"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/9
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       RESUME_GENERATOR_URL: http://resume-generator:5003
       APPLICATION_AUTOMATION_URL: http://application-automation:5004
       KNOWLEDGE_GRAPH_URL: http://knowledge-graph:5008
@@ -311,7 +311,7 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  # ─── Blackhole Services ──────────────────────────────────────────────────────
+  # â”€â”€â”€ Blackhole Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   predictive-ai:
     build:
       context: .
@@ -320,10 +320,10 @@ services:
     ports:
       - "5010:5010"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/10
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -336,10 +336,10 @@ services:
     ports:
       - "5011:5011"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/11
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -352,10 +352,10 @@ services:
     ports:
       - "5012:5012"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/12
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
     depends_on:
@@ -370,10 +370,10 @@ services:
     ports:
       - "5013:5013"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/13
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -386,10 +386,10 @@ services:
     ports:
       - "5014:5014"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/14
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -402,10 +402,10 @@ services:
     ports:
       - "5015:5015"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/15
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -418,10 +418,10 @@ services:
     ports:
       - "5016:5016"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/16
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -434,10 +434,10 @@ services:
     ports:
       - "5017:5017"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/17
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       JOB_DISCOVERY_URL: http://job-discovery:5001
       JOB_INTELLIGENCE_URL: http://job-intelligence:5002
       RESUME_GENERATOR_URL: http://resume-generator:5003
@@ -458,9 +458,9 @@ services:
     ports:
       - "5018:5018"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
       REDIS_URL: redis://redis:6379/18
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -473,14 +473,14 @@ services:
     ports:
       - "5019:5019"
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
       REDIS_URL: redis://redis:6379/19
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
 
-  # ─── Web Frontend ────────────────────────────────────────────────────────────
+  # â”€â”€â”€ Web Frontend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   web:
     build:
       context: .
@@ -494,18 +494,18 @@ services:
     depends_on:
       - api-gateway
 
-  # ─── Celery Worker ──────────────────────────────────────────────────────────
+  # â”€â”€â”€ Celery Worker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   celery-worker:
     build:
       context: .
       dockerfile: Dockerfile
       target: celery-worker
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      DATABASE_URL_SYNC: postgresql://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      DATABASE_URL_SYNC: postgresql://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
       CRAWL_ENGINE_URL: http://crawl-engine:5006
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       JSEARCH_API_KEY: ${JSEARCH_API_KEY:-}
@@ -530,11 +530,11 @@ services:
       dockerfile: Dockerfile
       target: celery-beat
     environment:
-      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      DATABASE_URL_SYNC: postgresql://career:${POSTGRES_PASSWORD:-changeme}@postgres:5432/career_agent
-      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD:-changeme}@rabbitmq:5672/
+      DATABASE_URL: postgresql+asyncpg://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      DATABASE_URL_SYNC: postgresql://career:${POSTGRES_PASSWORD}@postgres:5432/career_agent
+      RABBITMQ_URL: amqp://career:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: ${JWT_SECRET:-super-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy

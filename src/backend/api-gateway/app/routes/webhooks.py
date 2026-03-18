@@ -25,7 +25,8 @@ WEBHOOK_SECRET = getattr(settings, "webhook_secret", "")
 def _verify_secret(token: str | None) -> None:
     """Validate the inbound webhook token."""
     if not WEBHOOK_SECRET:
-        return  # No secret configured — allow all (dev mode)
+        logger.warning("WEBHOOK_SECRET not configured — rejecting all webhook requests")
+        raise HTTPException(status_code=403, detail="Webhook secret not configured")
     if not token or not hmac.compare_digest(token, WEBHOOK_SECRET):
         raise HTTPException(status_code=401, detail="Invalid webhook token")
 
@@ -152,7 +153,6 @@ async def webhook_status():
     """Check webhook subsystem health and list available endpoints."""
     return {
         "status": "active",
-        "secret_configured": bool(WEBHOOK_SECRET),
         "endpoints": [
             "/api/webhooks/job-discovered",
             "/api/webhooks/trigger-crawl",

@@ -2,9 +2,10 @@
 
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from shared.auth import get_current_user
 from shared.tasks.job_hunt import run_pipeline, run_job_hunt
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,10 @@ class JobHuntResponse(BaseModel):
 
 
 @router.post("/api/run-job-hunt", response_model=JobHuntResponse)
-async def trigger_job_hunt(body: JobHuntRequest = JobHuntRequest()):
+async def trigger_job_hunt(
+    body: JobHuntRequest = JobHuntRequest(),
+    current_user: dict = Depends(get_current_user),
+):
     """Manually trigger the full job-hunt pipeline.
 
     - ``async_mode=false`` (default): runs synchronously, returns results.

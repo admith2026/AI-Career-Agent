@@ -33,7 +33,7 @@ export default function VoiceCalls() {
 
   const load = () => {
     Promise.all([
-      voiceApi.getCalls().then(r => setCalls(r.data.calls ?? r.data ?? [])).catch(() => {}),
+      voiceApi.getCalls().then(r => { const d = r.data?.calls ?? r.data; setCalls(Array.isArray(d) ? d : []); }).catch(() => {}),
       voiceApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };

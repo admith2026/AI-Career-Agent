@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+/** Safely extract an array from API response data. Handles error objects, nested keys, etc. */
+export const safeArray = (data: any, key?: string): any[] => {
+  const d = key ? (data?.[key] ?? data) : data;
+  return Array.isArray(d) ? d : [];
+};
+
 const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },

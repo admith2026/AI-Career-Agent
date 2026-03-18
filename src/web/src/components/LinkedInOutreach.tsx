@@ -32,7 +32,7 @@ export default function LinkedInOutreach() {
 
   const load = () => {
     Promise.all([
-      linkedinApi.getOutreach(statusFilter || undefined).then(r => setItems(r.data.outreach ?? r.data ?? [])).catch(() => {}),
+      linkedinApi.getOutreach(statusFilter || undefined).then(r => { const d = r.data?.outreach ?? r.data; setItems(Array.isArray(d) ? d : []); }).catch(() => {}),
       linkedinApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };

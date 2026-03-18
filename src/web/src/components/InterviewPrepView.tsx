@@ -35,7 +35,7 @@ export default function InterviewPrepView() {
 
   const load = () => {
     Promise.all([
-      interviewApi.getPreps().then(r => setPreps(r.data.preps ?? r.data ?? [])).catch(() => {}),
+      interviewApi.getPreps().then(r => { const d = r.data?.preps ?? r.data; setPreps(Array.isArray(d) ? d : []); }).catch(() => {}),
       interviewApi.getStats().then(r => setStats(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   };
@@ -52,7 +52,7 @@ export default function InterviewPrepView() {
   const searchRoleQuestions = () => {
     if (!roleSearch.trim()) return;
     interviewApi.predictQuestions(roleSearch)
-      .then(r => setRoleQuestions(r.data.questions ?? r.data ?? []))
+      .then(r => { const d = r.data?.questions ?? r.data; setRoleQuestions(Array.isArray(d) ? d : []); })
       .catch(() => setRoleQuestions([]));
   };
 

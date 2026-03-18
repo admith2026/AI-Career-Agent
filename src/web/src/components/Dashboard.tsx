@@ -41,11 +41,11 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
           totalApplications: appRes.data.total ?? 0,
           appsByStatus: appRes.data.by_status ?? {},
         });
-        setRecentJobs(jobsRes.data?.data ?? []);
+        setRecentJobs(Array.isArray(jobsRes.data?.data) ? jobsRes.data.data : []);
         setDecisionStats(decRes.data);
         setGraphStats(gRes.data);
         // Load agent activity feed
-        agentsApi.getActivity(10).then(r => setAgentActivity(r.data?.activity ?? [])).catch(() => {});
+        agentsApi.getActivity(10).then(r => { const d = r.data?.activity; setAgentActivity(Array.isArray(d) ? d : []); }).catch(() => {});
       } catch {
         setStats({ totalJobs: 0, activeJobs: 0, bySource: {}, totalApplications: 0, appsByStatus: {} });
       } finally {

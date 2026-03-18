@@ -14,3 +14,4 @@ python-dotenv==1.0.0
 openai==1.14.0
 aiosmtplib==3.0.1
 celery[redis]==5.3.6
+slowapi==0.1.9

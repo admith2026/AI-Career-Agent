@@ -34,7 +34,7 @@ export default function AnalyticsView() {
           { range: '50-59', count: Math.floor(Math.random() * 35) + 10 },
           { range: '< 50', count: Math.floor(Math.random() * 25) + 5 },
         ],
-        topTechnologies: (techRes.data ?? []).slice(0, 10).map((t: any) => ({
+        topTechnologies: (Array.isArray(techRes.data) ? techRes.data : []).slice(0, 10).map((t: any) => ({
           name: t.technology,
           demand: t.demand,
         })),

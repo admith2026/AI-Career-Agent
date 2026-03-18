@@ -45,8 +45,16 @@ async def update_profile(
         profile = UserProfile(user_id=current_user["user_id"])
         db.add(profile)
 
+    ALLOWED_PROFILE_FIELDS = {
+        "headline", "summary", "skills", "experience_years",
+        "preferred_rate_min", "preferred_rate_max", "preferred_contract_types",
+        "preferred_technologies", "preferred_roles", "preferred_locations",
+        "visa_required", "min_company_size", "resume_base",
+        "linkedin_url", "github_url", "portfolio_url",
+    }
     for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(profile, field, value)
+        if field in ALLOWED_PROFILE_FIELDS:
+            setattr(profile, field, value)
 
     await db.commit()
     await db.refresh(profile)

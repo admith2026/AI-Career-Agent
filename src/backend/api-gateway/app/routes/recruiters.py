@@ -73,8 +73,14 @@ async def list_recruiters(
             )
         )
 
-    # Sort
-    sort_col = getattr(RecruiterContact, sort_by, RecruiterContact.intelligence_score)
+    # Sort — use explicit allowlist instead of dynamic getattr
+    SORT_COLUMNS = {
+        "intelligence_score": RecruiterContact.intelligence_score,
+        "response_rate": RecruiterContact.response_rate,
+        "last_contacted": RecruiterContact.last_contacted,
+        "name": RecruiterContact.name,
+    }
+    sort_col = SORT_COLUMNS.get(sort_by, RecruiterContact.intelligence_score)
     query = query.order_by(desc(sort_col))
 
     count_q = select(func.count()).select_from(query.subquery())
@@ -141,8 +147,13 @@ async def update_recruiter(
     if not recruiter:
         raise HTTPException(status_code=404, detail="Recruiter not found")
 
+    ALLOWED_RECRUITER_FIELDS = {
+        "name", "email", "phone", "company", "linkedin_url",
+        "source", "notes", "specializations",
+    }
     for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(recruiter, field, value)
+        if field in ALLOWED_RECRUITER_FIELDS:
+            setattr(recruiter, field, value)
     await db.commit()
     await db.refresh(recruiter)
     return _recruiter_to_dict(recruiter)

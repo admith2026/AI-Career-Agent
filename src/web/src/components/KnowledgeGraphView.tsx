@@ -38,8 +38,8 @@ export default function KnowledgeGraphView() {
       graphApi.getTechDemand(15).catch(() => ({ data: [] })),
       graphApi.getStats().catch(() => ({ data: {} })),
     ]).then(([hRes, tRes, sRes]) => {
-      setHotspots(hRes.data ?? []);
-      setTechDemand(tRes.data ?? []);
+      setHotspots(Array.isArray(hRes.data) ? hRes.data : []);
+      setTechDemand(Array.isArray(tRes.data) ? tRes.data : []);
       setStats(sRes.data);
       setLoading(false);
     });

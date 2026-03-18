@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class BaseServiceSettings(BaseSettings):
     """Base settings shared by all services."""
 
-    # Database
+    # Database — MUST be set via environment variable
     database_url: str = "postgresql+asyncpg://career_agent:career_agent_pwd@localhost:5432/career_agent"
     database_url_sync: str = "postgresql://career_agent:career_agent_pwd@localhost:5432/career_agent"
 
@@ -14,10 +14,10 @@ class BaseServiceSettings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379"
 
-    # JWT
-    jwt_secret: str = "YourSuperSecretKeyThatIsLongEnoughForHS256Algorithm!"
+    # JWT — secret MUST be overridden in production via JWT_SECRET env var
+    jwt_secret: str = "CHANGE-ME-IN-PRODUCTION-USE-RANDOM-256-BIT-SECRET"
     jwt_algorithm: str = "HS256"
-    jwt_expiration_minutes: int = 1440
+    jwt_expiration_minutes: int = 480  # 8 hours (reduced from 24h)
 
     # API Keys
     openai_api_key: str = ""

@@ -18,7 +18,7 @@ export default function SubscriptionView() {
   const load = () => {
     setLoading(true);
     Promise.all([
-      billingApi.getPlans().then(r => setPlans(r.data.plans ?? [])).catch(() => {}),
+      billingApi.getPlans().then(r => { const d = r.data?.plans ?? r.data; setPlans(Array.isArray(d) ? d : []); }).catch(() => {}),
       billingApi.getSubscription().then(r => setSub(r.data)).catch(() => {}),
       billingApi.getUsage().then(r => setUsage(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
