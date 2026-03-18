@@ -1,6 +1,7 @@
 """Reddit crawler — monitors subreddits for job posts and hiring signals."""
 
 import logging
+from datetime import datetime, timezone
 import httpx
 from fake_useragent import UserAgent
 
@@ -60,6 +61,9 @@ class RedditCrawler(BaseCrawler):
 
                         item_type = "job" if any(k in text_lower for k in ["[hiring]", "position", "looking for"]) else "signal"
 
+                        created_utc = post.get("created_utc", 0)
+                        date_posted = datetime.fromtimestamp(created_utc, tz=timezone.utc) if created_utc else None
+
                         items.append(CrawledItem(
                             source=source_name,
                             item_type=item_type,
@@ -71,8 +75,9 @@ class RedditCrawler(BaseCrawler):
                                 "subreddit": subreddit,
                                 "score": post.get("score", 0),
                                 "author": post.get("author", ""),
-                                "created_utc": post.get("created_utc", 0),
+                                "created_utc": created_utc,
                             },
+                            date_posted=date_posted,
                         ))
                 except Exception as e:
                     logger.error(f"Reddit crawl r/{subreddit} failed: {e}")

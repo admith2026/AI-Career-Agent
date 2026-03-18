@@ -165,6 +165,10 @@ async def list_jobs(
         order_col = JobAnalysis.match_score
     elif sort_by == "job_title":
         order_col = Job.job_title
+    elif sort_by == "company_name":
+        order_col = Job.company_name
+    elif sort_by == "date_posted":
+        order_col = Job.date_posted
     else:
         order_col = Job.date_discovered
 

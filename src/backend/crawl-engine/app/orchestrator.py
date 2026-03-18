@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, update, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -69,7 +69,7 @@ class CrawlOrchestrator:
     async def _schedule_due_sources(self):
         """Check crawler_sources for those due for recrawling and enqueue them."""
         async for db in get_db_session():
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             result = await db.execute(
                 select(CrawlerSource).where(
                     CrawlerSource.is_enabled == True,
@@ -80,9 +80,13 @@ class CrawlOrchestrator:
             sources = result.scalars().all()
 
             for source in sources:
-                if source.last_crawled_at and \
-                   (now - source.last_crawled_at).total_seconds() < source.crawl_frequency_minutes * 60:
-                    continue
+                last = source.last_crawled_at
+                if last:
+                    # Ensure both are aware for comparison
+                    if last.tzinfo is None:
+                        last = last.replace(tzinfo=timezone.utc)
+                    if (now - last).total_seconds() < source.crawl_frequency_minutes * 60:
+                        continue
 
                 # Check if already queued
                 existing = await db.execute(
@@ -91,7 +95,7 @@ class CrawlOrchestrator:
                         CrawlQueueItem.status.in_(["pending", "running"]),
                     )
                 )
-                if existing.scalar_one_or_none():
+                if existing.scalars().first():
                     continue
 
                 queue_item = CrawlQueueItem(
@@ -111,7 +115,7 @@ class CrawlOrchestrator:
             result = await db.execute(
                 select(CrawlQueueItem).where(
                     CrawlQueueItem.status == "pending",
-                    CrawlQueueItem.scheduled_at <= datetime.utcnow(),
+                    CrawlQueueItem.scheduled_at <= datetime.now(timezone.utc),
                 ).order_by(
                     CrawlQueueItem.priority.desc(),
                     CrawlQueueItem.scheduled_at,
@@ -136,7 +140,7 @@ class CrawlOrchestrator:
                     ).values(
                         status="running",
                         worker_id=settings.worker_id,
-                        started_at=datetime.utcnow(),
+                        started_at=datetime.now(timezone.utc),
                         attempts=CrawlQueueItem.attempts + 1,
                     )
                 )
@@ -153,7 +157,7 @@ class CrawlOrchestrator:
                 # Create crawl log
                 crawl_log = CrawlLog(
                     source=source_name,
-                    started_at=datetime.utcnow(),
+                    started_at=datetime.now(timezone.utc),
                     status="running",
                 )
                 db.add(crawl_log)
@@ -181,6 +185,7 @@ class CrawlOrchestrator:
                                 "extracted_data": item.extracted_data,
                                 "external_id": item.external_id,
                                 "content_hash": item.content_hash,
+                                "date_posted": item.date_posted.isoformat() if item.date_posted else None,
                             },
                         )
 
@@ -190,19 +195,19 @@ class CrawlOrchestrator:
                             CrawlQueueItem.id == queue_item.id,
                         ).values(
                             status="completed",
-                            completed_at=datetime.utcnow(),
+                            completed_at=datetime.now(timezone.utc),
                             result_data={"items_found": len(items)},
                         )
                     )
 
                     # Update crawl log
-                    crawl_log.completed_at = datetime.utcnow()
+                    crawl_log.completed_at = datetime.now(timezone.utc)
                     crawl_log.jobs_found = len([i for i in items if i.item_type == "job"])
                     crawl_log.status = "completed"
 
                     # Update source last_crawled_at
                     if source:
-                        source.last_crawled_at = datetime.utcnow()
+                        source.last_crawled_at = datetime.now(timezone.utc)
 
                     await db.commit()
                     logger.info(f"Crawl completed: {source_name} — {len(items)} items found")
@@ -221,11 +226,11 @@ class CrawlOrchestrator:
                         ).values(
                             status=status,
                             error_message=str(e)[:500],
-                            scheduled_at=datetime.utcnow() + timedelta(minutes=5) if status == "retrying" else None,
+                            scheduled_at=datetime.now(timezone.utc) + timedelta(minutes=5) if status == "retrying" else None,
                         )
                     )
 
-                    crawl_log.completed_at = datetime.utcnow()
+                    crawl_log.completed_at = datetime.now(timezone.utc)
                     crawl_log.status = "failed"
                     crawl_log.error_message = str(e)[:500]
 

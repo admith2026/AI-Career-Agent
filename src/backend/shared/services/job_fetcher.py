@@ -25,6 +25,7 @@ class ParsedJob:
     apply_link: str
     location: str
     job_id: str
+    date_posted: str = ""
 
 
 async def fetch_jobs(
@@ -46,7 +47,7 @@ async def fetch_jobs(
     params = {
         "query": query,
         "num_pages": str(num_pages),
-        "date_posted": "today",
+        "date_posted": "week",
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -76,6 +77,7 @@ async def fetch_jobs(
         ).strip()
         location = item.get("job_city", "Remote")
         job_id = item.get("job_id", "")
+        date_posted = item.get("job_posted_at_datetime_utc", "") or item.get("job_posted_date", "")
 
         if not title or not description:
             continue
@@ -87,6 +89,7 @@ async def fetch_jobs(
             apply_link=apply_link,
             location=location or "Remote",
             job_id=job_id,
+            date_posted=date_posted,
         ))
 
     logger.info("Parsed %d valid jobs from JSearch response", len(parsed))

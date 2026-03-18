@@ -1,6 +1,7 @@
 """GitHub crawler — finds hiring signals from repos, orgs, and job postings."""
 
 import logging
+from datetime import datetime
 import httpx
 from fake_useragent import UserAgent
 
@@ -59,6 +60,7 @@ class GitHubCrawler(BaseCrawler):
                                 "company_name": issue.get("repository_url", "").split("/")[-2] if "repository_url" in issue else "",
                                 "source": "github_issues",
                             },
+                            date_posted=self._parse_gh_date(issue.get("created_at")),
                         ))
 
                 # Search repos for careers/jobs repos
@@ -92,3 +94,12 @@ class GitHubCrawler(BaseCrawler):
     async def parse(self, html: str, url: str, **kwargs) -> list[CrawledItem]:
         # GitHub crawler uses API, not HTML parsing
         return []
+
+    @staticmethod
+    def _parse_gh_date(date_str: str | None) -> datetime | None:
+        if not date_str:
+            return None
+        try:
+            return datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            return None

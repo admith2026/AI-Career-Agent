@@ -1,6 +1,8 @@
 """HTTP-based crawler using httpx + BeautifulSoup for static pages."""
 
 import logging
+import re
+from datetime import datetime, timedelta, timezone
 from bs4 import BeautifulSoup
 import httpx
 from fake_useragent import UserAgent
@@ -97,7 +99,55 @@ class HttpCrawler(BaseCrawler):
                     "location": location,
                     "job_description": article.get_text(separator="\n", strip=True)[:3000],
                 },
+                date_posted=self._extract_date(article),
             ))
 
         logger.info(f"HTTP crawler extracted {len(items)} items from {url}")
         return items
+
+    @staticmethod
+    def _extract_date(element) -> datetime | None:
+        """Try to extract a posting date from an HTML element."""
+        # Check <time> tags
+        time_el = element.find("time")
+        if time_el:
+            for attr in ("datetime", "content"):
+                val = time_el.get(attr, "")
+                if val:
+                    try:
+                        return datetime.fromisoformat(val.replace("Z", "+00:00"))
+                    except ValueError:
+                        pass
+            text = time_el.get_text(strip=True)
+            parsed = HttpCrawler._parse_relative_date(text)
+            if parsed:
+                return parsed
+
+        # Check elements with date-like classes
+        date_el = element.find(class_=lambda c: c and any(
+            k in str(c).lower() for k in ["date", "time", "posted", "ago"]
+        ))
+        if date_el:
+            parsed = HttpCrawler._parse_relative_date(date_el.get_text(strip=True))
+            if parsed:
+                return parsed
+
+        return None
+
+    @staticmethod
+    def _parse_relative_date(text: str) -> datetime | None:
+        """Parse relative date strings like '2 days ago', '3h ago'."""
+        text = text.lower().strip()
+        now = datetime.now(timezone.utc)
+        m = re.search(r'(\d+)\s*(second|minute|hour|day|week|month)s?\s*ago', text)
+        if m:
+            n, unit = int(m.group(1)), m.group(2)
+            deltas = {"second": 1, "minute": 60, "hour": 3600, "day": 86400, "week": 604800, "month": 2592000}
+            return now - timedelta(seconds=n * deltas.get(unit, 86400))
+        # Try ISO format
+        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%b %d, %Y", "%d %b %Y"):
+            try:
+                return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+        return None

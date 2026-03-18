@@ -17,6 +17,7 @@ class CrawledItem:
     extracted_data: dict = field(default_factory=dict)
     external_id: str = ""
     discovered_at: datetime = field(default_factory=datetime.utcnow)
+    date_posted: datetime | None = None
 
     @property
     def content_hash(self) -> str:

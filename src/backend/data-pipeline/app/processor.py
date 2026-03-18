@@ -49,16 +49,34 @@ class DataProcessor:
             # Check DB-level dedup by external_id + source
             external_id = data.get("external_id", "")
             source = data.get("source", "unknown")
-            if external_id:
-                existing = await db.execute(
-                    select(Job).where(Job.external_id == external_id, Job.source == source)
-                )
-                if existing.scalar_one_or_none():
-                    return None
+
+            # Generate a stable ID from content_hash or URL+title
+            if not external_id:
+                content_hash = data.get("content_hash", "")
+                if content_hash:
+                    external_id = content_hash[:32]
+                else:
+                    external_id = hashlib.sha256(
+                        f"{data.get('url', '')}:{data.get('title', '')}".encode()
+                    ).hexdigest()[:32]
+
+            existing = await db.execute(
+                select(Job).where(Job.external_id == external_id, Job.source == source)
+            )
+            if existing.scalar_one_or_none():
+                return None
 
             # Normalize and create job
+            date_posted = None
+            dp_raw = data.get("date_posted") or extracted.get("date_posted")
+            if dp_raw:
+                try:
+                    date_posted = datetime.fromisoformat(dp_raw) if isinstance(dp_raw, str) else dp_raw
+                except (ValueError, TypeError):
+                    pass
+
             job = Job(
-                external_id=external_id or hashlib.sha256(data.get("url", "").encode()).hexdigest()[:32],
+                external_id=external_id,
                 source=source,
                 job_title=self._normalize_title(data.get("title", "")),
                 company_name=extracted.get("company_name", ""),
@@ -72,6 +90,7 @@ class DataProcessor:
                 recruiter_email=extracted.get("recruiter_email", ""),
                 raw_data=data,
                 date_discovered=datetime.utcnow(),
+                date_posted=date_posted,
             )
             db.add(job)
             await db.commit()
@@ -87,7 +106,7 @@ class DataProcessor:
             await db.commit()
 
             # Publish for AI analysis
-            await self.event_bus.publish(Exchanges.JOB_DISCOVERED, {
+            await self.event_bus.publish(Exchanges.JOB_ANALYZED, {
                 "job_id": str(job.id),
                 "job_title": job.job_title,
                 "company_name": job.company_name,

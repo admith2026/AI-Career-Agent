@@ -38,14 +38,24 @@ export default function PipelineMonitor() {
     });
   }, []);
 
+  const [triggerResult, setTriggerResult] = useState<{ name: string; ok: boolean } | null>(null);
+
   const handleTrigger = async (sourceName: string) => {
     setTriggering(sourceName);
+    setTriggerResult(null);
     try {
       await crawlApi.triggerCrawl(sourceName);
+      setTriggerResult({ name: sourceName, ok: true });
+      // Refresh sources after trigger
+      const sRes = await crawlApi.getSources().catch(() => ({ data: [] }));
+      setSources(Array.isArray(sRes.data) ? sRes.data : []);
+      const cRes = await crawlApi.getStats().catch(() => ({ data: {} }));
+      setCrawlStats(cRes.data);
     } catch {
-      // silent
+      setTriggerResult({ name: sourceName, ok: false });
     } finally {
       setTriggering(null);
+      setTimeout(() => setTriggerResult(null), 4000);
     }
   };
 
@@ -92,6 +102,19 @@ export default function PipelineMonitor() {
         </div>
       )}
 
+      {/* Trigger feedback */}
+      {triggerResult && (
+        <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
+          triggerResult.ok
+            ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+            : 'bg-red-500/10 border border-red-500/30 text-red-400'
+        }`}>
+          {triggerResult.ok
+            ? `✓ Crawl queued for "${triggerResult.name}" — processing in background`
+            : `✗ Failed to trigger crawl for "${triggerResult.name}"`}
+        </div>
+      )}
+
       {/* Crawler Sources */}
       <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
@@ -109,14 +132,14 @@ export default function PipelineMonitor() {
                 style={{ animationDelay: `${i * 30}ms` }}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${src.enabled ? 'bg-green-400 animate-pulse' : 'bg-gray-600'}`} />
+                  <div className={`w-2 h-2 rounded-full ${src.is_enabled ? 'bg-green-400 animate-pulse' : 'bg-gray-600'}`} />
                   <div>
                     <span className="text-sm text-white font-medium">{src.name}</span>
                     <Badge variant="gray">{src.crawler_type}</Badge>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant={src.enabled ? 'green' : 'gray'} dot>{src.enabled ? 'Active' : 'Disabled'}</Badge>
+                  <Badge variant={src.is_enabled ? 'green' : 'gray'} dot>{src.is_enabled ? 'Active' : 'Disabled'}</Badge>
                   <button
                     onClick={() => handleTrigger(src.name)}
                     disabled={triggering === src.name}
