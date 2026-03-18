@@ -23,6 +23,20 @@ def set_engine(e: DecisionEngine):
     engine = e
 
 
+@router.get("", response_model=list[DecisionLogOut])
+async def list_decisions(
+    user_id: UUID = Query(None),
+    limit: int = Query(50, le=200),
+    db: AsyncSession = Depends(get_db),
+):
+    """List recent decision logs (alias for /log)."""
+    q = select(DecisionLog).order_by(DecisionLog.created_at.desc()).limit(limit)
+    if user_id:
+        q = q.where(DecisionLog.user_id == user_id)
+    result = await db.execute(q)
+    return result.scalars().all()
+
+
 @router.post("/evaluate/{job_id}")
 async def evaluate_job(job_id: UUID, user_id: UUID = Query(...), db: AsyncSession = Depends(get_db)):
     return await engine.evaluate_job(job_id, user_id, db)

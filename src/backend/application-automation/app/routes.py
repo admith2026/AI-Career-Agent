@@ -70,50 +70,6 @@ async def list_applications(
     return [ApplicationOut.model_validate(r) for r in rows]
 
 
-@router.get("/{application_id}", response_model=ApplicationOut)
-async def get_application(
-    application_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
-):
-    """Get a single application by ID."""
-    result = await db.execute(
-        select(JobApplication)
-        .options(joinedload(JobApplication.job))
-        .where(JobApplication.id == application_id, JobApplication.user_id == current_user["user_id"])
-    )
-    app = result.unique().scalar_one_or_none()
-    if not app:
-        raise HTTPException(status_code=404, detail="Application not found")
-    return ApplicationOut.model_validate(app)
-
-
-@router.patch("/{application_id}", response_model=ApplicationOut)
-async def update_application_status(
-    application_id: UUID,
-    body: ApplicationStatusUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
-):
-    """Update application status (e.g., interview, offered, rejected)."""
-    result = await db.execute(
-        select(JobApplication).where(
-            JobApplication.id == application_id,
-            JobApplication.user_id == current_user["user_id"],
-        )
-    )
-    app = result.scalar_one_or_none()
-    if not app:
-        raise HTTPException(status_code=404, detail="Application not found")
-
-    app.status = body.status
-    if body.notes:
-        app.notes = body.notes
-    await db.commit()
-    await db.refresh(app)
-    return ApplicationOut.model_validate(app)
-
-
 @router.get("/stats/summary")
 async def application_stats(
     db: AsyncSession = Depends(get_db),
@@ -132,6 +88,16 @@ async def application_stats(
     by_status = {row[0]: row[1] for row in rows}
 
     return {"total": total, "by_status": by_status}
+
+
+# Also serve /stats for frontend compatibility
+@router.get("/stats")
+async def application_stats_alias(
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Alias for /stats/summary."""
+    return await application_stats(db=db, current_user=current_user)
 
 
 # ─── Auto-Apply Scheduling & Follow-up ──────────────────────────────────────
@@ -268,3 +234,50 @@ async def get_follow_ups(
         "follow_ups_needed": len(rows),
         "applications": [ApplicationOut.model_validate(r) for r in rows],
     }
+
+
+# ─── Parameterized routes MUST come last ─────────────────────────────────────
+
+
+@router.get("/{application_id}", response_model=ApplicationOut)
+async def get_application(
+    application_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Get a single application by ID."""
+    result = await db.execute(
+        select(JobApplication)
+        .options(joinedload(JobApplication.job))
+        .where(JobApplication.id == application_id, JobApplication.user_id == current_user["user_id"])
+    )
+    app = result.unique().scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+    return ApplicationOut.model_validate(app)
+
+
+@router.patch("/{application_id}", response_model=ApplicationOut)
+async def update_application_status(
+    application_id: UUID,
+    body: ApplicationStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Update application status (e.g., interview, offered, rejected)."""
+    result = await db.execute(
+        select(JobApplication).where(
+            JobApplication.id == application_id,
+            JobApplication.user_id == current_user["user_id"],
+        )
+    )
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    app.status = body.status
+    if body.notes:
+        app.notes = body.notes
+    await db.commit()
+    await db.refresh(app)
+    return ApplicationOut.model_validate(app)
