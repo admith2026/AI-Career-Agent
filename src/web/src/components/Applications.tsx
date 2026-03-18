@@ -41,7 +41,7 @@ export default function Applications() {
   useEffect(() => {
     if (!user) return;
     applicationsApi.getUserApplications()
-      .then((res) => setApps(res.data ?? []))
+      .then((res) => setApps(Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : [])))
       .catch(() => setApps([]))
       .finally(() => setLoading(false));
   }, [user]);

@@ -42,7 +42,8 @@ export default function DecisionLog() {
       decisionsApi.getLog(100).catch(() => ({ data: [] })),
       decisionsApi.getStats().catch(() => ({ data: {} })),
     ]).then(([dRes, sRes]) => {
-      setDecisions(dRes.data ?? []);
+      const dData = dRes.data;
+      setDecisions(Array.isArray(dData) ? dData : (Array.isArray(dData?.decisions) ? dData.decisions : []));
       setStats(sRes.data);
       setLoading(false);
     });

@@ -45,9 +45,9 @@ export default function DemandGeneration() {
 
   const load = () => {
     Promise.all([
-      contentApi.getPosts(platformFilter || undefined).then(r => setPosts(r.data.posts ?? r.data ?? [])).catch(() => {}),
+      contentApi.getPosts(platformFilter || undefined).then(r => { const d = r.data?.posts ?? r.data; setPosts(Array.isArray(d) ? d : []); }).catch(() => {}),
       contentApi.getStats().then(r => setStats(r.data)).catch(() => {}),
-      contentApi.getCalendar(14).then(r => setCalendar(r.data.calendar ?? r.data ?? [])).catch(() => {}),
+      contentApi.getCalendar(14).then(r => { const d = r.data?.calendar ?? r.data; setCalendar(Array.isArray(d) ? d : []); }).catch(() => {}),
     ]).finally(() => setLoading(false));
   };
 

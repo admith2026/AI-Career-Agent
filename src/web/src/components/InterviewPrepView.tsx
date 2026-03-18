@@ -28,7 +28,7 @@ export default function InterviewPrepView() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showGenForm, setShowGenForm] = useState(false);
-  const [genForm, setGenForm] = useState({ job_id: '', role: '', company: '', difficulty: 'medium' });
+  const [genForm, setGenForm] = useState({ job_id: '', role_title: '', company_name: '', difficulty_level: 'medium' });
   const [selectedPrep, setSelectedPrep] = useState<Prep | null>(null);
   const [roleQuestions, setRoleQuestions] = useState<any[]>([]);
   const [roleSearch, setRoleSearch] = useState('');
@@ -43,9 +43,9 @@ export default function InterviewPrepView() {
   useEffect(() => { load(); }, []);
 
   const generatePrep = () => {
-    if (!genForm.role.trim() && !genForm.job_id.trim()) return;
-    interviewApi.generatePrep(genForm)
-      .then(() => { setShowGenForm(false); setGenForm({ job_id: '', role: '', company: '', difficulty: 'medium' }); load(); })
+    if (!genForm.role_title.trim() && !genForm.job_id.trim()) return;
+    interviewApi.generatePrep({ ...genForm, job_id: genForm.job_id || undefined })
+      .then(() => { setShowGenForm(false); setGenForm({ job_id: '', role_title: '', company_name: '', difficulty_level: 'medium' }); load(); })
       .catch(() => {});
   };
 
@@ -95,10 +95,10 @@ export default function InterviewPrepView() {
         <div className="card p-6 space-y-4">
           <h3 className="text-white font-medium">Generate Interview Prep</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" value={genForm.role} onChange={e => setGenForm({...genForm, role: e.target.value})} placeholder="Role (e.g. Senior Backend Engineer)" className="input-field" />
-            <input type="text" value={genForm.company} onChange={e => setGenForm({...genForm, company: e.target.value})} placeholder="Company name" className="input-field" />
+            <input type="text" value={genForm.role_title} onChange={e => setGenForm({...genForm, role_title: e.target.value})} placeholder="Role (e.g. Senior Backend Engineer)" className="input-field" />
+            <input type="text" value={genForm.company_name} onChange={e => setGenForm({...genForm, company_name: e.target.value})} placeholder="Company name" className="input-field" />
             <input type="text" value={genForm.job_id} onChange={e => setGenForm({...genForm, job_id: e.target.value})} placeholder="Job ID (optional)" className="input-field" />
-            <select value={genForm.difficulty} onChange={e => setGenForm({...genForm, difficulty: e.target.value})} className="input-field">
+            <select value={genForm.difficulty_level} onChange={e => setGenForm({...genForm, difficulty_level: e.target.value})} className="input-field">
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
               <option value="hard">Hard</option>

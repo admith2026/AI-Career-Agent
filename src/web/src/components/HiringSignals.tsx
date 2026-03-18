@@ -31,7 +31,10 @@ export default function HiringSignals() {
 
   useEffect(() => {
     pipelineApi.getSignals(100)
-      .then((res) => setSignals(res.data.items ?? res.data ?? []))
+      .then((res) => {
+        const d = res.data?.items ?? res.data;
+        setSignals(Array.isArray(d) ? d : []);
+      })
       .catch(() => setSignals([]))
       .finally(() => setLoading(false));
   }, []);

@@ -23,7 +23,10 @@ async def get_profile(
     )
     profile = result.scalar_one_or_none()
     if not profile:
-        raise HTTPException(404, "Profile not found")
+        profile = UserProfile(user_id=current_user["user_id"])
+        db.add(profile)
+        await db.commit()
+        await db.refresh(profile)
     return profile
 
 

@@ -156,8 +156,8 @@ class PaginatedJobs(BaseModel):
 
 
 class ApplyRequest(BaseModel):
-    user_id: UUID
     job_id: UUID
+    user_id: UUID | None = None
 
 
 class ApplicationStatusUpdate(BaseModel):

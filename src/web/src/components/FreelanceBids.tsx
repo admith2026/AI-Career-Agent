@@ -46,8 +46,12 @@ export default function FreelanceBids() {
   const createBid = () => {
     if (!bidForm.project_title.trim()) return;
     freelanceApi.createBid({
-      ...bidForm,
+      platform: bidForm.platform,
+      project_title: bidForm.project_title,
+      project_url: bidForm.project_url || undefined,
+      description: bidForm.client_description,
       required_skills: bidForm.required_skills ? bidForm.required_skills.split(',').map(s => s.trim()) : [],
+      budget_range: bidForm.budget_range || undefined,
     })
       .then(() => { setShowBidForm(false); setBidForm({ platform: 'upwork', project_title: '', project_url: '', client_description: '', required_skills: '', budget_range: '', deadline: '' }); load(); })
       .catch(() => {});

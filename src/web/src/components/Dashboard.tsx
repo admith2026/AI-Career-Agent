@@ -172,7 +172,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               </div>
               {Object.entries((decisionStats?.by_decision as Record<string, number>) ?? {}).slice(0, 2).map(([d, c]) => (
                 <div key={d} className="bg-navy-950/50 rounded-xl p-3 text-center">
-                  <p className="text-xl font-bold text-gold-400">{c}</p>
+                  <p className="text-xl font-bold text-gold-400">{typeof c === 'object' ? JSON.stringify(c) : c}</p>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">{d.replace(/_/g, ' ')}</p>
                 </div>
               ))}
@@ -195,7 +195,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
                   <div className="flex-1">
                     <ProgressBar value={count} max={maxCount} color="cyan" height="md" />
                   </div>
-                  <span className="text-sm text-white font-medium w-10 text-right">{count}</span>
+                  <span className="text-sm text-white font-medium w-10 text-right">{typeof count === 'object' ? JSON.stringify(count) : count}</span>
                 </div>
               );
             })}
