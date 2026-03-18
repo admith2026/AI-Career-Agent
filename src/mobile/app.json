@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Career Agent",
+    "slug": "career-agent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "career-agent",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3B82F6"
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.careeragent.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#111827"
+      },
+      "package": "com.careeragent.mobile"
+    }
+  }
+}

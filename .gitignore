@@ -1,0 +1,52 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# Node.js
+node_modules/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker volumes
+postgres_data/
+redis_data/
+rabbitmq_data/
+neo4j_data/
+qdrant_data/
+
+# Logs
+*.log
+logs/
+
+# Coverage
+.coverage
+htmlcov/
+.nyc_output/
+
+# Build artifacts
+*.o
+*.so
+*.dylib
